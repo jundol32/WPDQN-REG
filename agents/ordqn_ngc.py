@@ -160,10 +160,10 @@ def get_default_config():
     import ml_collections
 
     return ml_collections.ConfigDict({
-        'learning_rate': 3e-4,
+        'learning_rate': 1e-4, #3e-4
         'hidden_dims': (256, 256),
         'discount': 0.99,
         # 'tau': 0.005,
-        'target_update_freq' : 5, # target_update_freq 대신 tau로 변경
+        'target_update_freq' : 80, # target_update_freq 대신 tau로 변경 #5
         'loss_p': 4.0,
     })

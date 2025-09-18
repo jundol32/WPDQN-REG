@@ -11,12 +11,12 @@ script_to_run = "main.py"
 project_name = "DQN-Paper-REG-[USETHIS]"
 
 # (수정됨) 실험할 환경 목록
-env_names = ["CartPole-v1", "LunarLander-v3"
+env_names = ["CartPole-v1", "LunarLander-v3", "CartPole-v1", "CartPole-v1",
              # "Acrobot-v1", "MountainCar-v0", "LunarLander-v3"
              ]  # 나중에 ["CartPole-v1", "LunarLander-v2"] 와 같이 추가 가능
 
 # 실험할 에이전트 목록
-agents = ["wpdqn", "ordqn_ngc"]
+agents = ["bregdqn2", "wpdqn", "ordqn_ngc", "bregdqn2", ]
 
 # 생성할 랜덤 시드 개수
 num_seeds = 10

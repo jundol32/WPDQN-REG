@@ -58,8 +58,9 @@ class WPDQNAgent(flax.struct.PyTreeNode):
 
             p = agent.config.get('loss_p', 4.0)
             weights_numerator = td_error_current ** (p - 2.0)
-            weights_denominator = jnp.sum(weights_numerator)
-            weights = weights_numerator / (weights_denominator + 1e-6)
+            weights_denominator = jnp.sum(weights_numerator) + 10
+
+            weights = weights_numerator / (weights_denominator) + 10 #1e-6을 삭제했음.
 
             # --- 3. 실제 손실 계산을 위한 TD 오차 계산 (기존과 유사) ---
             # (주의: 여기서는 그래디언트가 흘러야 하므로 stop_gradient 사용 안 함)
@@ -74,11 +75,26 @@ class WPDQNAgent(flax.struct.PyTreeNode):
             weighted_squared_error = weights * squared_error  # 실시간 가중치 적용
             loss = 0.5 * jnp.mean(weighted_squared_error)
 
-            mu = agent.config.get('reg_out_mu', 0.1)
-            eps = 1e-6
 
-            reg_per_state = jnp.sum((jnp.abs(q_vals_current) + eps) ** p, axis=-1)  # shape (B,)
-            reg_term = (mu / p) * jnp.mean(reg_per_state)
+
+
+            # ================== NEW: IRLS-style L_p Tikhonov regularizer ==================
+
+            mu = agent.config.get('reg_out_mu', 1e-4)
+
+            eps = 1e-8
+            q_for_w = jax.lax.stop_gradient(q_vals_current)  # shape (B, A)
+            w_reg_num = (jnp.abs(q_for_w) + eps) ** (p - 2.0)  # (B, A)
+            w_reg_den = jnp.sum(w_reg_num)  # scalar
+            w_reg = w_reg_num / (w_reg_den + 1e-6)  # sum=1
+            reg_sq = q_vals_current ** 2  # (B, A)
+            reg_term = 0.5 * mu * jnp.sum(w_reg * reg_sq)
+
+            # mu = agent.config.get('reg_out_mu', 1e-8)
+            # eps = 1e-6
+            #
+            # reg_per_state = jnp.sum((jnp.abs(q_vals_current) + eps) ** p, axis=-1)  # shape (B,)
+            # reg_term = (mu / p) * jnp.mean(reg_per_state)
 
 
             return loss + reg_term , {
@@ -176,10 +192,10 @@ def get_default_config():
     import ml_collections
 
     return ml_collections.ConfigDict({
-        'learning_rate': 3e-4,
+        'learning_rate': 1e-4,
         'hidden_dims': (256, 256),
         'discount': 0.99,
         # 'tau': 0.005,
-        'target_update_freq' : 5, # target_update_freq 대신 tau로 변경
-        'loss_p': 4.0,
+        'target_update_freq' : 80, # target_update_freq 대신 tau로 변경
+        'loss_p': 6.0,
     })
