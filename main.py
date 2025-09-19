@@ -113,7 +113,7 @@ def main(_):
         next_observations=obs,
     )
 
-    replay_buffer = ReplayBuffer.create(example_transition, size=int(5e4), seed_key=buffer_key)
+    replay_buffer = ReplayBuffer.create(example_transition, size=int(1e4), seed_key=buffer_key)
 
     # DQN 에이전트 생성 (num_actions 전달)
     agent = learner.create_learner(agent_key,

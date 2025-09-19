@@ -121,6 +121,7 @@ def create_learner(
     q_params = q_network_def.init(q_key, observations)['params']
 
     optimizer = optax.chain(
+        optax.clip_by_global_norm(1.0),
         optax.adam(learning_rate=learning_rate)
     )
 
@@ -139,7 +140,7 @@ def create_learner(
 def get_default_config():
     import ml_collections
     return ml_collections.ConfigDict({
-        'learning_rate': 1e-4,
+        'learning_rate': 3e-4,
         'hidden_dims': (256, 256),
         'discount': 0.99,
         'target_update_freq': 80,
